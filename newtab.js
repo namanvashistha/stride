@@ -176,6 +176,7 @@ function cleanupOldData() {
 function createLinkCard(url, title, todayDate, completed, index) {
   const card = document.createElement('a');
   card.href = url;
+  card.target = '_blank';
   card.className = 'card';
   card.tabIndex = 0;
   card.setAttribute('data-url', url);
@@ -200,10 +201,12 @@ function createLinkCard(url, title, todayDate, completed, index) {
   // Handle keyboard navigation
   card.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
+      if (e.key === ' ') {
+        e.preventDefault(); // Prevent page scroll on space
+        card.click(); // Trigger click to open link
+      }
       markLinkCompleted(url, todayDate);
       card.classList.add('completed');
-      window.open(url, '_blank');
     }
   });
   
