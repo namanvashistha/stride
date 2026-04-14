@@ -5,6 +5,26 @@
 // ============================================
 
 /**
+ * Convert a key to a display name
+ * @param {string} key - The key to convert (e.g., "system_design", "lld", "dsa")
+ * @returns {string} - A human-readable display name
+ */
+function keyToDisplayName(key) {
+  // Common abbreviations to uppercase
+  const abbreviations = ['dsa', 'lld', 'hld', 'api', 'apis', 'sql', 'ui', 'ux', 'dp', 'bfs', 'dfs'];
+  
+  if (abbreviations.includes(key.toLowerCase())) {
+    return key.toUpperCase();
+  }
+  
+  // Split by underscores and capitalize each word
+  return key
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
  * Generate a clean title from a URL
  * @param {string} url - The URL to parse
  * @returns {string} - A human-readable title

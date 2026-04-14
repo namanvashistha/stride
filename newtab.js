@@ -1,13 +1,12 @@
 // ============================================
 // DATA MODEL
 // ============================================
-// Default links and categories are loaded from defaults.js
+// Default links are loaded from defaults.js (2-level nested structure)
 // Edit links via the Settings page (right-click extension icon > Options)
 // ============================================
 
 // These will be loaded from chrome.storage (defaults from defaults.js)
 let LINKS_DATA = DEFAULT_LINKS;
-let CATEGORIES_DATA = DEFAULT_CATEGORIES;
 
 // ============================================
 // CORE LOGIC
@@ -48,15 +47,6 @@ function createSeededRandom(seed) {
 }
 
 /**
- * Select category for the day using deterministic rotation
- */
-function selectCategoryForDay(seed) {
-  const categories = Object.keys(LINKS_DATA);
-  const index = seed % categories.length;
-  return categories[index];
-}
-
-/**
  * Shuffle array with seeded random
  */
 function shuffleArray(array, random) {
@@ -69,24 +59,60 @@ function shuffleArray(array, random) {
 }
 
 /**
- * Get daily links selection
+ * Select subcategory for each category based on the day
+ */
+function selectSubcategoriesForDay(seed) {
+  const categories = Object.keys(LINKS_DATA).sort(); // Sort for consistency
+  const random = createSeededRandom(seed);
+  const selections = [];
+  
+  categories.forEach((categoryId) => {
+    const subcategoryIds = Object.keys(LINKS_DATA[categoryId] || {}).sort();
+    if (subcategoryIds.length > 0) {
+      // Pick one subcategory from this category
+      const index = Math.floor(random() * subcategoryIds.length);
+      const subcategoryId = subcategoryIds[index];
+      selections.push({
+        categoryId,
+        subcategoryId,
+        links: LINKS_DATA[categoryId][subcategoryId] || []
+      });
+    }
+  });
+  
+  return selections;
+}
+
+/**
+ * Get daily links selection (6 links from multiple subcategories)
  */
 function getDailyLinks(dateString) {
   const seed = generateSeed(dateString);
   const random = createSeededRandom(seed);
   
-  // Select category for the day
-  const selectedCategory = selectCategoryForDay(seed);
+  // Select one subcategory from each category
+  const selections = selectSubcategoriesForDay(seed);
   
-  // Get all links from selected category
-  const categoryLinks = LINKS_DATA[selectedCategory] || [];
+  // Collect all links from selected subcategories
+  let allLinks = [];
+  selections.forEach(selection => {
+    // Shuffle links within each subcategory
+    const shuffled = shuffleArray(selection.links, random);
+    shuffled.forEach(link => {
+      allLinks.push({
+        ...link,
+        categoryId: selection.categoryId,
+        subcategoryId: selection.subcategoryId
+      });
+    });
+  });
   
-  // Shuffle and select up to 6 links
-  const shuffled = shuffleArray(categoryLinks, random);
-  const selectedLinks = shuffled.slice(0, Math.min(6, shuffled.length));
+  // Shuffle all links together and take 6
+  allLinks = shuffleArray(allLinks, random);
+  const selectedLinks = allLinks.slice(0, Math.min(6, allLinks.length));
   
   return {
-    category: selectedCategory,
+    selections, // Keep track of which subcategories were chosen
     links: selectedLinks
   };
 }
@@ -151,13 +177,15 @@ function cleanupOldData() {
  */
 function render() {
   const todayDate = getTodayDateString();
-  const { category, links } = getDailyLinks(todayDate);
+  const { selections, links } = getDailyLinks(todayDate);
   const completed = getCompletionState(todayDate);
   
-  // Update category badge
+  // Update category badge with selected subcategories
   const categoryBadge = document.getElementById('categoryBadge');
-  const categoryName = CATEGORIES_DATA[category]?.name || category.replace('_', ' ');
-  categoryBadge.textContent = categoryName;
+  const badgeText = selections
+    .map(s => `${keyToDisplayName(s.categoryId)} → ${keyToDisplayName(s.subcategoryId)}`)
+    .join(' • ');
+  categoryBadge.textContent = badgeText;
   
   // Render cards
   const cardsGrid = document.getElementById('cardsGrid');
@@ -247,55 +275,95 @@ function setupKeyboardNavigation() {
 // ============================================
 
 /**
- * Render sidebar with all links organized by category
+ * Render sidebar with all links organized by category → subcategory
  */
 function renderSidebar() {
   const sidebarContent = document.getElementById('sidebarContent');
-  const sortedCategories = Object.keys(CATEGORIES_DATA)
-    .map(id => ({ id, ...CATEGORIES_DATA[id] }))
-    .sort((a, b) => a.order - b.order);
+  const categoryIds = Object.keys(LINKS_DATA).sort();
   
-  sidebarContent.innerHTML = sortedCategories.map(cat => {
-    const links = LINKS_DATA[cat.id] || [];
-    if (links.length === 0) return '';
+  sidebarContent.innerHTML = categoryIds.map(categoryId => {
+    const subcategories = LINKS_DATA[categoryId] || {};
+    const subcategoryIds = Object.keys(subcategories).sort();
+    
+    if (subcategoryIds.length === 0) return '';
+    
+    // Count total links in this category
+    const totalLinks = subcategoryIds.reduce((sum, subId) => sum + (subcategories[subId]?.length || 0), 0);
     
     return `
       <div class="sidebar-category">
-        <button class="sidebar-category-header" data-category="${cat.id}">
+        <button class="sidebar-category-header" data-category="${categoryId}">
           <span class="category-icon">▶</span>
-          <span>${cat.name}</span>
-          <span class="category-count">${links.length}</span>
+          <span>${keyToDisplayName(categoryId)}</span>
+          <span class="category-count">${totalLinks}</span>
         </button>
-        <div class="sidebar-category-links" data-category="${cat.id}">
-          ${links.map(link => `
-            <a href="${link.url}" class="sidebar-link" target="_blank">
-              <span class="link-title">${escapeHtml(getLinkTitle(link))}</span>
-            </a>
-          `).join('')}
+        <div class="sidebar-category-content" data-category="${categoryId}">
+          ${subcategoryIds.map(subcategoryId => {
+            const links = subcategories[subcategoryId] || [];
+            if (links.length === 0) return '';
+            
+            return `
+              <div class="sidebar-subcategory">
+                <button class="sidebar-subcategory-header" data-category="${categoryId}" data-subcategory="${subcategoryId}">
+                  <span class="subcategory-icon">▸</span>
+                  <span>${keyToDisplayName(subcategoryId)}</span>
+                  <span class="subcategory-count">${links.length}</span>
+                </button>
+                <div class="sidebar-subcategory-links" data-category="${categoryId}" data-subcategory="${subcategoryId}">
+                  ${links.map(link => `
+                    <a href="${link.url}" class="sidebar-link" target="_blank">
+                      <span class="link-title">${escapeHtml(getLinkTitle(link))}</span>
+                    </a>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
   }).join('');
   
-  // Add click handlers for collapsible headers
+  // Add click handlers for collapsible category headers
   sidebarContent.querySelectorAll('.sidebar-category-header').forEach(header => {
     header.addEventListener('click', () => {
       const categoryId = header.dataset.category;
-      const linksContainer = sidebarContent.querySelector(`.sidebar-category-links[data-category="${categoryId}"]`);
+      const contentContainer = sidebarContent.querySelector(`.sidebar-category-content[data-category="${categoryId}"]`);
       const icon = header.querySelector('.category-icon');
       
-      if (linksContainer.style.display === 'none' || !linksContainer.style.display) {
-        linksContainer.style.display = 'block';
+      if (contentContainer.style.display === 'none' || !contentContainer.style.display) {
+        contentContainer.style.display = 'block';
         icon.textContent = '▼';
       } else {
-        linksContainer.style.display = 'none';
+        contentContainer.style.display = 'none';
         icon.textContent = '▶';
       }
     });
   });
   
+  // Add click handlers for collapsible subcategory headers
+  sidebarContent.querySelectorAll('.sidebar-subcategory-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const categoryId = header.dataset.category;
+      const subcategoryId = header.dataset.subcategory;
+      const linksContainer = sidebarContent.querySelector(`.sidebar-subcategory-links[data-category="${categoryId}"][data-subcategory="${subcategoryId}"]`);
+      const icon = header.querySelector('.subcategory-icon');
+      
+      if (linksContainer.style.display === 'none' || !linksContainer.style.display) {
+        linksContainer.style.display = 'block';
+        icon.textContent = '▾';
+      } else {
+        linksContainer.style.display = 'none';
+        icon.textContent = '▸';
+      }
+    });
+  });
+  
   // Initialize all as collapsed
-  sidebarContent.querySelectorAll('.sidebar-category-links').forEach(container => {
+  sidebarContent.querySelectorAll('.sidebar-category-content').forEach(container => {
+    container.style.display = 'none';
+  });
+  sidebarContent.querySelectorAll('.sidebar-subcategory-links').forEach(container => {
     container.style.display = 'none';
   });
 }
@@ -336,21 +404,15 @@ function setupSidebar() {
 // ============================================
 
 /**
- * Load links and categories from chrome.storage
+ * Load links from chrome.storage
  */
 async function loadLinksData() {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(['stride_links', 'stride_categories'], (result) => {
+    chrome.storage.sync.get(['stride_links'], (result) => {
       if (result.stride_links) {
         LINKS_DATA = result.stride_links;
       } else {
         LINKS_DATA = DEFAULT_LINKS;
-      }
-      
-      if (result.stride_categories) {
-        CATEGORIES_DATA = result.stride_categories;
-      } else {
-        CATEGORIES_DATA = DEFAULT_CATEGORIES;
       }
       
       resolve();

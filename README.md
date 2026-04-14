@@ -4,12 +4,12 @@ A minimal, production-quality Chrome extension that replaces your new tab with a
 
 ## Features
 
-- **Settings UI**: Easy-to-use interface for managing links and categories without editing code
-- **Configurable Categories**: Add, rename, or delete categories to match your prep needs
-- **Sidebar Explorer**: View all your links at once with collapsible categories
-- **Daily Link Rotation**: Deterministic selection that changes daily but stays consistent throughout the day
-- **Simple & Fair**: Equal chance for all links—no complex weighting
-- **Category-Based**: Organize by any topics you want (default: DSA, System Design, Backend, Behavioral)
+- **2-Level Organization**: Category → Subcategory → Links structure for better organization
+- **Settings UI**: Manage categories, subcategories, and links without editing code
+- **Configurable**: Add or delete categories and subcategories to match your prep needs
+- **Sidebar Explorer**: View all links with collapsible 2-level nesting
+- **Daily Link Rotation**: Picks one subcategory from each category daily, shows ~6 links total
+- **Auto-Generated Titles**: Link titles and category names generated automatically from URLs and keys
 - **Completion Tracking**: Click to mark links as done (persists throughout the day)
 - **Dark Theme**: Clean, distraction-free UI
 - **Keyboard Navigation**: Arrow keys + Enter for accessibility, Escape to close sidebar
@@ -53,12 +53,13 @@ To package for distribution:
 
 ### Managing Links
 
-1. Click the ⚙️ settings icon in the top-right corner of the new tab page
+1. Click the ⚙️ settings icon in the sidebar (☰ button to open)
 2. Or right-click the extension icon → "Options"
-3. Select a category tab
-4. Add, edit, reorder, or delete links (only URL required)
-5. Titles are automatically generated from URLs
-6. Click "Save Changes" to persist your edits
+3. Select a category tab (DSA, System Design, etc.)
+4. Manage subcategories and their links
+5. Add/delete categories, subcategories, and links
+6. Titles are automatically generated from URLs
+7. Click "Save Changes" to persist your edits
 
 ### Import/Export Links
 
@@ -72,16 +73,20 @@ You can also edit links by modifying the `DEFAULT_LINKS` object in `defaults.js`
 
 ```javascript
 const DEFAULT_LINKS = {
-  dsa: [
-    { url: 'https://example.com' },
-    { url: 'https://another.com' }
-  ],
-  // ... more categories
+  dsa: {
+    arrays: [{ url: 'https://example.com' }],
+    trees: [{ url: 'https://another.com' }]
+  },
+  system_design: {
+    lld: [{ url: 'https://designpatterns.com' }]
+  }
 };
 ```
 
-**Link Properties:**
-- `url` (required): The target URL - titles are auto-generated from URLs
+**Structure:**
+- 2-level nesting: Category → Subcategory → Links
+- Titles are auto-generated from URLs
+- Display names auto-generated from keys (e.g., `lld` → "LLD", `star_method` → "Star Method")
 
 ### How Selection Works
 

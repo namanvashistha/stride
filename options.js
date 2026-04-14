@@ -1,37 +1,35 @@
-// Default links and categories are loaded from defaults.js
+// Default links are loaded from defaults.js (2-level nested structure)
 
 let currentCategory = null;
+let currentSubcategory = null;
 let linksData = {};
-let categoriesData = {};
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
   await loadLinks();
   renderTabs();
   setupEventListeners();
-  renderLinks();
+  renderSubcategories();
 });
 
-// Load links and categories from chrome.storage
+// Load links from chrome.storage
 async function loadLinks() {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(['stride_links', 'stride_categories'], (result) => {
+    chrome.storage.sync.get(['stride_links'], (result) => {
       if (result.stride_links) {
         linksData = result.stride_links;
       } else {
         linksData = JSON.parse(JSON.stringify(DEFAULT_LINKS));
       }
       
-      if (result.stride_categories) {
-        categoriesData = result.stride_categories;
-      } else {
-        categoriesData = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-      }
-      
-      // Set first category as current
-      const sortedCategories = getSortedCategories();
-      if (sortedCategories.length > 0 && !currentCategory) {
-        currentCategory = sortedCategories[0].id;
+      // Set first category and subcategory as current
+      const categoryIds = Object.keys(linksData).sort();
+      if (categoryIds.length > 0 && !currentCategory) {
+        currentCategory = categoryIds[0];
+        const subcategoryIds = Object.keys(linksData[currentCategory] || {}).sort();
+        if (subcategoryIds.length > 0) {
+          currentSubcategory = subcategoryIds[0];
+        }
       }
       
       resolve();
@@ -39,12 +37,11 @@ async function loadLinks() {
   });
 }
 
-// Save links and categories to chrome.storage
+// Save links to chrome.storage
 async function saveLinks() {
   return new Promise((resolve, reject) => {
     chrome.storage.sync.set({ 
-      stride_links: linksData,
-      stride_categories: categoriesData 
+      stride_links: linksData
     }, () => {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError);
@@ -53,13 +50,6 @@ async function saveLinks() {
       }
     });
   });
-}
-
-// Get sorted categories by order
-function getSortedCategories() {
-  return Object.keys(categoriesData)
-    .map(id => ({ id, ...categoriesData[id] }))
-    .sort((a, b) => a.order - b.order);
 }
 
 // Setup event listeners
@@ -71,37 +61,6 @@ function setupEventListeners() {
     });
   });
   
-  // Tab switching - will be setup in renderTabs()
-  
-  // Category management
-  document.getElementById('addCategoryBtn').addEventListener('click', () => {
-    const categoryId = prompt('Category ID (lowercase, no spaces):');
-    if (!categoryId) return;
-    
-    // Validate ID
-    if (!/^[a-z0-9_]+$/.test(categoryId)) {
-      alert('Category ID must be lowercase letters, numbers, or underscores only');
-      return;
-    }
-    
-    if (categoriesData[categoryId]) {
-      alert('Category already exists!');
-      return;
-    }
-    
-    const categoryName = prompt('Category display name:');
-    if (!categoryName) return;
-    
-    const maxOrder = Math.max(...Object.values(categoriesData).map(c => c.order), -1);
-    categoriesData[categoryId] = { name: categoryName, order: maxOrder + 1 };
-    linksData[categoryId] = [];
-    
-    renderTabs();
-    currentCategory = categoryId;
-    renderLinks();
-    showStatus('Category added (remember to save!)', 'success');
-  });
-
   // Save button
   document.getElementById('saveBtn').addEventListener('click', async () => {
     try {
@@ -114,26 +73,23 @@ function setupEventListeners() {
 
   // Reset button
   document.getElementById('resetBtn').addEventListener('click', () => {
-    if (confirm('Are you sure you want to reset all links and categories to defaults? This cannot be undone.')) {
+    if (confirm('Are you sure you want to reset all links to defaults? This cannot be undone.')) {
       linksData = JSON.parse(JSON.stringify(DEFAULT_LINKS));
-      categoriesData = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-      const sortedCategories = getSortedCategories();
-      if (sortedCategories.length > 0) {
-        currentCategory = sortedCategories[0].id;
+      const categoryIds = Object.keys(linksData).sort();
+      if (categoryIds.length > 0) {
+        currentCategory = categoryIds[0];
+        const subcategoryIds = Object.keys(linksData[currentCategory] || {}).sort();
+        currentSubcategory = subcategoryIds.length > 0 ? subcategoryIds[0] : null;
       }
       renderTabs();
-      renderLinks();
+      renderSubcategories();
       showStatus('Reset to defaults (remember to save!)', 'success');
     }
   });
 
   // Export button
   document.getElementById('exportBtn').addEventListener('click', () => {
-    const exportData = {
-      links: linksData,
-      categories: categoriesData
-    };
-    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataStr = JSON.stringify(linksData, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -155,24 +111,17 @@ function setupEventListeners() {
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
-          const imported = JSON.parse(event.target.result);
+          linksData = JSON.parse(event.target.result);
           
-          // Support both old format (just links) and new format (links + categories)
-          if (imported.links && imported.categories) {
-            linksData = imported.links;
-            categoriesData = imported.categories;
-          } else {
-            // Old format - just links
-            linksData = imported;
-          }
-          
-          const sortedCategories = getSortedCategories();
-          if (sortedCategories.length > 0) {
-            currentCategory = sortedCategories[0].id;
+          const categoryIds = Object.keys(linksData).sort();
+          if (categoryIds.length > 0) {
+            currentCategory = categoryIds[0];
+            const subcategoryIds = Object.keys(linksData[currentCategory] || {}).sort();
+            currentSubcategory = subcategoryIds.length > 0 ? subcategoryIds[0] : null;
           }
           
           renderTabs();
-          renderLinks();
+          renderSubcategories();
           showStatus('Data imported successfully (remember to save!)', 'success');
         } catch (error) {
           showStatus('Error importing file: Invalid JSON', 'error');
@@ -181,32 +130,16 @@ function setupEventListeners() {
       reader.readAsText(file);
     }
   });
-
-  // Add link button
-  document.getElementById('addLinkBtn').addEventListener('click', () => {
-    if (!currentCategory) {
-      alert('Please create a category first!');
-      return;
-    }
-    const newLink = {
-      url: ''
-    };
-    if (!linksData[currentCategory]) {
-      linksData[currentCategory] = [];
-    }
-    linksData[currentCategory].push(newLink);
-    renderLinks();
-  });
 }
 
 // Render category tabs
 function renderTabs() {
   const tabsContainer = document.querySelector('.tabs');
-  const sortedCategories = getSortedCategories();
+  const categoryIds = Object.keys(linksData).sort();
   
-  tabsContainer.innerHTML = sortedCategories.map(cat => `
-    <button class="tab-btn ${cat.id === currentCategory ? 'active' : ''}" data-category="${cat.id}">
-      ${escapeHtml(cat.name)}
+  tabsContainer.innerHTML = categoryIds.map(categoryId => `
+    <button class="tab-btn ${categoryId === currentCategory ? 'active' : ''}" data-category="${categoryId}">
+      ${escapeHtml(keyToDisplayName(categoryId))}
     </button>
   `).join('') + `
     <button class="tab-btn tab-btn-add" id="addCategoryBtn" title="Add category">+</button>
@@ -216,8 +149,10 @@ function renderTabs() {
   tabsContainer.querySelectorAll('.tab-btn:not(.tab-btn-add)').forEach(btn => {
     btn.addEventListener('click', () => {
       currentCategory = btn.dataset.category;
+      const subcategoryIds = Object.keys(linksData[currentCategory] || {}).sort();
+      currentSubcategory = subcategoryIds.length > 0 ? subcategoryIds[0] : null;
       renderTabs();
-      renderLinks();
+      renderSubcategories();
     });
     
     // Right-click to rename/delete
@@ -225,42 +160,34 @@ function renderTabs() {
       e.preventDefault();
       const categoryId = btn.dataset.category;
       
-      const action = confirm(`Rename or Delete "${categoriesData[categoryId].name}"?\n\nOK = Rename\nCancel = Delete`);
+      const action = confirm(`Delete "${keyToDisplayName(categoryId)}" and all its content?\n\nOK = Delete\nCancel = Keep`);
       
       if (action) {
-        // Rename
-        const newName = prompt('New display name:', categoriesData[categoryId].name);
-        if (newName) {
-          categoriesData[categoryId].name = newName;
-          renderTabs();
-          showStatus('Category renamed (remember to save!)', 'success');
-        }
-      } else {
         // Delete
-        if (confirm(`Delete "${categoriesData[categoryId].name}" and all its links?`)) {
-          delete categoriesData[categoryId];
-          delete linksData[categoryId];
-          
-          const remaining = getSortedCategories();
-          if (remaining.length > 0) {
-            currentCategory = remaining[0].id;
-          } else {
-            currentCategory = null;
-          }
-          
-          renderTabs();
-          renderLinks();
-          showStatus('Category deleted (remember to save!)', 'success');
+        delete linksData[categoryId];
+        
+        const remaining = Object.keys(linksData).sort();
+        if (remaining.length > 0) {
+          currentCategory = remaining[0];
+          const subcategoryIds = Object.keys(linksData[currentCategory] || {}).sort();
+          currentSubcategory = subcategoryIds.length > 0 ? subcategoryIds[0] : null;
+        } else {
+          currentCategory = null;
+          currentSubcategory = null;
         }
+        
+        renderTabs();
+        renderSubcategories();
+        showStatus('Category deleted (remember to save!)', 'success');
       }
     });
   });
   
-  // Re-attach add category button listener
+  // Add category button listener
   const addBtn = document.getElementById('addCategoryBtn');
   if (addBtn) {
     addBtn.addEventListener('click', () => {
-      const categoryId = prompt('Category ID (lowercase, no spaces):');
+      const categoryId = prompt('Category ID (lowercase, underscores allowed):');
       if (!categoryId) return;
       
       if (!/^[a-z0-9_]+$/.test(categoryId)) {
@@ -268,28 +195,23 @@ function renderTabs() {
         return;
       }
       
-      if (categoriesData[categoryId]) {
+      if (linksData[categoryId]) {
         alert('Category already exists!');
         return;
       }
       
-      const categoryName = prompt('Category display name:');
-      if (!categoryName) return;
-      
-      const maxOrder = Math.max(...Object.values(categoriesData).map(c => c.order), -1);
-      categoriesData[categoryId] = { name: categoryName, order: maxOrder + 1 };
-      linksData[categoryId] = [];
-      
+      linksData[categoryId] = {};
       currentCategory = categoryId;
+      currentSubcategory = null;
       renderTabs();
-      renderLinks();
+      renderSubcategories();
       showStatus('Category added (remember to save!)', 'success');
     });
   }
 }
 
-// Render links for current category
-function renderLinks() {
+// Render subcategories and links for current category
+function renderSubcategories() {
   const linksList = document.getElementById('linksList');
   
   if (!currentCategory) {
@@ -299,81 +221,128 @@ function renderLinks() {
         <p>Click the "+" button above to create a category</p>
       </div>
     `;
+    document.getElementById('addLinkBtn').style.display = 'none';
     return;
   }
   
-  const links = linksData[currentCategory] || [];
-
-  if (links.length === 0) {
+  document.getElementById('addLinkBtn').style.display = 'block';
+  
+  const subcategories = linksData[currentCategory] || {};
+  const subcategoryIds = Object.keys(subcategories).sort();
+  
+  if (subcategoryIds.length === 0) {
     linksList.innerHTML = `
       <div class="empty-state">
-        <p>No links yet in this category</p>
-        <p>Click "Add Link" below to get started</p>
+        <p>No subcategories in ${keyToDisplayName(currentCategory)}</p>
+        <p>Add a subcategory below</p>
+        <button class="btn btn-primary" id="addSubcategoryBtn">+ Add Subcategory</button>
       </div>
     `;
+    document.getElementById('addSubcategoryBtn').addEventListener('click', addSubcategory);
     return;
   }
-
-  linksList.innerHTML = links.map((link, index) => `
-    <div class="link-item" data-index="${index}">
-      <div class="link-item-header">
-        <span style="color: var(--text-secondary);">Link #${index + 1}</span>
-        <div class="link-item-actions">
-          <button class="btn-icon move-up" data-index="${index}" title="Move up">↑</button>
-          <button class="btn-icon move-down" data-index="${index}" title="Move down">↓</button>
-          <button class="btn-icon danger delete-link" data-index="${index}" title="Delete">🗑</button>
-        </div>
-      </div>
-      <div class="link-form">
-        <div class="form-group">
-          <label>URL</label>
-          <input type="url" class="link-url" data-index="${index}" value="${escapeHtml(link.url)}" placeholder="https://..." required>
-        </div>
-      </div>
+  
+  linksList.innerHTML = `
+    <div class="subcategories-header">
+      <h3>Subcategories in ${keyToDisplayName(currentCategory)}</h3>
+      <button class="btn btn-secondary" id="addSubcategoryBtn">+ Add Subcategory</button>
     </div>
-  `).join('');
+  ` + subcategoryIds.map(subcategoryId => {
+    const links = subcategories[subcategoryId] || [];
+    return `
+      <div class="subcategory-section">
+        <div class="subcategory-header">
+          <h4>${escapeHtml(keyToDisplayName(subcategoryId))}</h4>
+          <div class="subcategory-actions">
+            <button class="btn-icon" onclick="addLinkToSubcategory('${subcategoryId}')" title="Add link">+</button>
+            <button class="btn-icon danger" onclick="deleteSubcategory('${subcategoryId}')" title="Delete subcategory">🗑</button>
+          </div>
+        </div>
+        <div class="subcategory-links">
+          ${links.length === 0 ? '<p class="empty-notice">No links yet</p>' : ''}
+          ${links.map((link, index) => `
+            <div class="link-item">
+              <input type="url" class="link-input" value="${escapeHtml(link.url)}" 
+                     placeholder="https://..." 
+                     onchange="updateLink('${subcategoryId}', ${index}, this.value)">
+              <div class="link-actions">
+                <button class="btn-icon" onclick="moveLinkUp('${subcategoryId}', ${index})" title="Move up">↑</button>
+                <button class="btn-icon" onclick="moveLinkDown('${subcategoryId}', ${index})" title="Move down">↓</button>
+                <button class="btn-icon danger" onclick="deleteLink('${subcategoryId}', ${index})" title="Delete">✕</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.getElementById('addSubcategoryBtn').addEventListener('click', addSubcategory);
+}
 
-  // Add event listeners for form inputs
-  linksList.querySelectorAll('.link-url').forEach(input => {
-    input.addEventListener('input', (e) => {
-      const index = parseInt(e.target.dataset.index);
-      linksData[currentCategory][index].url = e.target.value;
-    });
-  });
+// Helper functions for link management
+function addSubcategory() {
+  const subcategoryId = prompt('Subcategory ID (lowercase, underscores allowed):');
+  if (!subcategoryId) return;
+  
+  if (!/^[a-z0-9_]+$/.test(subcategoryId)) {
+    alert('Subcategory ID must be lowercase letters, numbers, or underscores only');
+    return;
+  }
+  
+  if (linksData[currentCategory][subcategoryId]) {
+    alert('Subcategory already exists!');
+    return;
+  }
+  
+  linksData[currentCategory][subcategoryId] = [];
+  currentSubcategory = subcategoryId;
+  renderSubcategories();
+  showStatus('Subcategory added (remember to save!)', 'success');
+}
 
-  linksList.querySelectorAll('.delete-link').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const index = parseInt(e.target.dataset.index);
-      if (confirm('Delete this link?')) {
-        linksData[currentCategory].splice(index, 1);
-        renderLinks();
-      }
-    });
-  });
+function deleteSubcategory(subcategoryId) {
+  if (confirm(`Delete subcategory "${keyToDisplayName(subcategoryId)}" and all its links?`)) {
+    delete linksData[currentCategory][subcategoryId];
+    renderSubcategories();
+    showStatus('Subcategory deleted (remember to save!)', 'success');
+  }
+}
 
-  linksList.querySelectorAll('.move-up').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const index = parseInt(e.target.dataset.index);
-      if (index > 0) {
-        const temp = linksData[currentCategory][index];
-        linksData[currentCategory][index] = linksData[currentCategory][index - 1];
-        linksData[currentCategory][index - 1] = temp;
-        renderLinks();
-      }
-    });
-  });
+function addLinkToSubcategory(subcategoryId) {
+  if (!linksData[currentCategory][subcategoryId]) {
+    linksData[currentCategory][subcategoryId] = [];
+  }
+  linksData[currentCategory][subcategoryId].push({ url: '' });
+  renderSubcategories();
+}
 
-  linksList.querySelectorAll('.move-down').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const index = parseInt(e.target.dataset.index);
-      if (index < linksData[currentCategory].length - 1) {
-        const temp = linksData[currentCategory][index];
-        linksData[currentCategory][index] = linksData[currentCategory][index + 1];
-        linksData[currentCategory][index + 1] = temp;
-        renderLinks();
-      }
-    });
-  });
+function updateLink(subcategoryId, index, value) {
+  linksData[currentCategory][subcategoryId][index].url = value;
+}
+
+function deleteLink(subcategoryId, index) {
+  if (confirm('Delete this link?')) {
+    linksData[currentCategory][subcategoryId].splice(index, 1);
+    renderSubcategories();
+    showStatus('Link deleted (remember to save!)', 'success');
+  }
+}
+
+function moveLinkUp(subcategoryId, index) {
+  if (index > 0) {
+    const links = linksData[currentCategory][subcategoryId];
+    [links[index], links[index - 1]] = [links[index - 1], links[index]];
+    renderSubcategories();
+  }
+}
+
+function moveLinkDown(subcategoryId, index) {
+  const links = linksData[currentCategory][subcategoryId];
+  if (index < links.length - 1) {
+    [links[index], links[index + 1]] = [links[index + 1], links[index]];
+    renderSubcategories();
+  }
 }
 
 // Show status message
