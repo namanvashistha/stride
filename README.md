@@ -4,15 +4,16 @@ A minimal, production-quality Chrome extension that replaces your new tab with a
 
 ## Features
 
-- **Settings UI**: Easy-to-use interface for managing links without editing code
+- **Settings UI**: Easy-to-use interface for managing links and categories without editing code
+- **Configurable Categories**: Add, rename, or delete categories to match your prep needs
+- **Sidebar Explorer**: View all your links at once with collapsible categories
 - **Daily Link Rotation**: Deterministic selection that changes daily but stays consistent throughout the day
-- **Weighted Selection**: Important links appear more frequently
-- **Pinned Links**: Keep essential resources always visible (max 2)
-- **Category-Based**: Organized by DSA, System Design, Backend, and Behavioral
+- **Simple & Fair**: Equal chance for all links—no complex weighting
+- **Category-Based**: Organize by any topics you want (default: DSA, System Design, Backend, Behavioral)
 - **Completion Tracking**: Click to mark links as done (persists throughout the day)
 - **Dark Theme**: Clean, distraction-free UI
-- **Keyboard Navigation**: Arrow keys + Enter for accessibility
-- **Import/Export**: Backup and restore your link configurations
+- **Keyboard Navigation**: Arrow keys + Enter for accessibility, Escape to close sidebar
+- **Import/Export**: Backup and restore your configurations
 - **Zero Dependencies**: Plain HTML, CSS, JS - fast and lightweight
 
 ## Installation
@@ -35,15 +36,29 @@ To package for distribution:
 
 ## Configuration
 
-### Managing Links via Settings UI
+### Managing Categories
+
+**Add a Category:**
+- Click the **+** button in the tabs section
+- Enter a category ID (lowercase, no spaces, e.g., `frontend`)
+- Enter a display name (e.g., `Frontend`)
+
+**Rename a Category:**
+- Right-click on a category tab
+- Choose to rename and enter the new display name
+
+**Delete a Category:**
+- Right-click on a category tab
+- Choose to delete (this will remove all links in that category)
+
+### Managing Links
 
 1. Click the ⚙️ settings icon in the top-right corner of the new tab page
 2. Or right-click the extension icon → "Options"
-3. Select a category tab (DSA, System Design, Backend, Behavioral)
-4. Add, edit, or delete links
-5. Adjust weights (1-10, higher = more likely to appear)
-6. Pin important links (max 2 total across all categories)
-7. Click "Save Changes" to persist your edits
+3. Select a category tab
+4. Add, edit, reorder, or delete links (only URL required)
+5. Titles are automatically generated from URLs
+6. Click "Save Changes" to persist your edits
 
 ### Import/Export Links
 
@@ -53,30 +68,26 @@ To package for distribution:
 
 ### Manual Configuration (Advanced)
 
-You can also edit links by modifying the `DEFAULT_LINKS` object in `newtab.js`, though the Settings UI is recommended:
+You can also edit links by modifying the `DEFAULT_LINKS` object in `defaults.js`, though the Settings UI is recommended:
 
 ```javascript
 const DEFAULT_LINKS = {
   dsa: [
-    { url: 'https://example.com', title: 'My Link', weight: 2 },
-    { url: 'https://example.com', title: 'Important Link', weight: 3, pinned: true }
+    { url: 'https://example.com' },
+    { url: 'https://another.com' }
   ],
   // ... more categories
 };
 ```
 
 **Link Properties:**
-- `url` (required): The target URL
-- `title` (required): Display text
-- `weight` (optional): Probability multiplier (default: 1, higher = more likely)
-- `pinned` (optional): Always show this link (max 2 total across all categories)
+- `url` (required): The target URL - titles are auto-generated from URLs
 
 ### How Selection Works
 
 1. **Category Selection**: Rotates by day using a deterministic seed
-2. **Link Selection**: Uses weighted random selection within the category
-3. **Pinned Links**: Always included regardless of category
-4. **Count**: Shows 5-6 links total (pinned + selected)
+2. **Link Selection**: Randomly shuffles and picks up to 6 links from the selected category
+3. **Count**: Shows up to 6 links based on availability
 
 ## Technical Details
 
@@ -90,8 +101,10 @@ const DEFAULT_LINKS = {
 ```
 stride/
 ├── manifest.json       # Extension configuration
+├── utils.js            # Shared utility functions
+├── defaults.js         # Default links & categories
 ├── newtab.html        # New tab page structure
-├── newtab.js          # Core logic & data
+├── newtab.js          # Core logic & daily rotation
 ├── styles.css         # Dark theme styling
 ├── options.html       # Settings page structure
 ├── options.js         # Settings page logic
@@ -104,7 +117,7 @@ stride/
 
 The extension uses:
 - **Seeded Random**: Deterministic daily selections using date-based seeds
-- **Weighted Selection**: Probability-based link picking
+- **Fisher-Yates Shuffle**: Fair randomization for link selection
 - **Chrome Storage**: Links configuration synced across devices
 - **LocalStorage**: Completion state persists per day
 - **Auto-cleanup**: Removes completion data older than 7 days
@@ -112,10 +125,11 @@ The extension uses:
 ## Usage
 
 1. **Open a new tab**: Stride appears automatically
-2. **Click a link**: Opens in a new tab and marks as complete
-3. **Manage links**: Click the ⚙️ settings icon to add, edit, or remove links
-4. **Keyboard navigation**: Use arrow keys to move between cards, Enter to open
-5. **Daily refresh**: Links automatically change at midnight
+2. **View all links**: Click the ☰ button (top-left) to open the sidebar with all links organized by category
+3. **Click a link**: Opens in a new tab and marks as complete
+4. **Manage links**: Click the ⚙️ settings icon to add, edit, or remove links
+5. **Keyboard navigation**: Use arrow keys to move between cards, Enter to open, Escape to close sidebar
+6. **Daily refresh**: Links automatically change at midnight
 
 ## Customization
 

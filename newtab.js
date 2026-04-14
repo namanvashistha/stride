@@ -1,50 +1,13 @@
 // ============================================
 // DATA MODEL
 // ============================================
-// Default links - used if no custom links are saved
+// Default links and categories are loaded from defaults.js
 // Edit links via the Settings page (right-click extension icon > Options)
 // ============================================
 
-const DEFAULT_LINKS = {
-  dsa: [
-    { url: 'https://leetcode.com/problemset/', title: 'LeetCode Problems', weight: 2 },
-    { url: 'https://neetcode.io/', title: 'NeetCode Roadmap', weight: 2 },
-    { url: 'https://www.algoexpert.io/', title: 'AlgoExpert', weight: 1 },
-    { url: 'https://codeforces.com/', title: 'Codeforces', weight: 1 },
-    { url: 'https://www.hackerrank.com/domains/algorithms', title: 'HackerRank Algorithms', weight: 1 },
-    { url: 'https://www.geeksforgeeks.org/data-structures/', title: 'GeeksforGeeks DS', weight: 1 },
-    { url: 'https://visualgo.net/', title: 'VisuAlgo', weight: 1 },
-    { url: 'https://www.bigocheatsheet.com/', title: 'Big-O Cheat Sheet', weight: 1 }
-  ],
-  system_design: [
-    { url: 'https://github.com/donnemartin/system-design-primer', title: 'System Design Primer', weight: 3, pinned: true },
-    { url: 'https://www.designgurus.io/', title: 'Design Gurus', weight: 2 },
-    { url: 'https://bytebytego.com/', title: 'ByteByteGo', weight: 2 },
-    { url: 'https://systemdesignprimer.com/', title: 'System Design Primer Site', weight: 1 },
-    { url: 'https://www.youtube.com/@ByteByteGo', title: 'ByteByteGo YouTube', weight: 1 },
-    { url: 'https://www.interviewbit.com/system-design-interview-questions/', title: 'InterviewBit Questions', weight: 1 }
-  ],
-  backend: [
-    { url: 'https://roadmap.sh/backend', title: 'Backend Roadmap', weight: 2, pinned: true },
-    { url: 'https://12factor.net/', title: 'The Twelve-Factor App', weight: 1 },
-    { url: 'https://martinfowler.com/', title: 'Martin Fowler\'s Blog', weight: 1 },
-    { url: 'https://github.com/kamranahmedse/developer-roadmap', title: 'Developer Roadmap', weight: 1 },
-    { url: 'https://www.postgresql.org/docs/', title: 'PostgreSQL Docs', weight: 1 },
-    { url: 'https://redis.io/docs/', title: 'Redis Documentation', weight: 1 },
-    { url: 'https://docs.docker.com/', title: 'Docker Docs', weight: 1 }
-  ],
-  behavioral: [
-    { url: 'https://www.techinterviewhandbook.org/behavioral-interview/', title: 'Tech Interview Handbook', weight: 3 },
-    { url: 'https://www.levels.fyi/', title: 'Levels.fyi', weight: 1 },
-    { url: 'https://www.amazon.jobs/content/en/our-workplace/leadership-principles', title: 'Amazon Leadership Principles', weight: 1 },
-    { url: 'https://www.themuse.com/advice/star-interview-method', title: 'STAR Method Guide', weight: 2 },
-    { url: 'https://yangshun.github.io/tech-interview-handbook/behavioral-questions/', title: 'Behavioral Questions Bank', weight: 2 },
-    { url: 'https://www.indeed.com/career-advice/interviewing/how-to-prepare-for-a-behavioral-interview', title: 'Behavioral Prep Guide', weight: 1 }
-  ]
-};
-
-// This will be loaded from chrome.storage
+// These will be loaded from chrome.storage (defaults from defaults.js)
 let LINKS_DATA = DEFAULT_LINKS;
+let CATEGORIES_DATA = DEFAULT_CATEGORIES;
 
 // ============================================
 // CORE LOGIC
@@ -94,40 +57,15 @@ function selectCategoryForDay(seed) {
 }
 
 /**
- * Weighted random selection from an array
+ * Shuffle array with seeded random
  */
-function weightedRandomSelect(items, count, random) {
-  const totalWeight = items.reduce((sum, item) => sum + (item.weight || 1), 0);
-  const selected = [];
-  const remaining = [...items];
-  
-  while (selected.length < count && remaining.length > 0) {
-    let randomWeight = random() * totalWeight;
-    let cumulativeWeight = 0;
-    
-    for (let i = 0; i < remaining.length; i++) {
-      cumulativeWeight += remaining[i].weight || 1;
-      if (randomWeight <= cumulativeWeight) {
-        selected.push(remaining[i]);
-        remaining.splice(i, 1);
-        break;
-      }
-    }
+function shuffleArray(array, random) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  
-  return selected;
-}
-
-/**
- * Get pinned links (max 2)
- */
-function getPinnedLinks() {
-  const pinned = [];
-  for (const category in LINKS_DATA) {
-    const categoryPinned = LINKS_DATA[category].filter(link => link.pinned);
-    pinned.push(...categoryPinned);
-  }
-  return pinned.slice(0, 2);
+  return shuffled;
 }
 
 /**
@@ -137,28 +75,19 @@ function getDailyLinks(dateString) {
   const seed = generateSeed(dateString);
   const random = createSeededRandom(seed);
   
-  // Get pinned links
-  const pinnedLinks = getPinnedLinks();
-  
   // Select category for the day
   const selectedCategory = selectCategoryForDay(seed);
   
-  // Get non-pinned links from selected category
-  const categoryLinks = LINKS_DATA[selectedCategory].filter(link => !link.pinned);
+  // Get all links from selected category
+  const categoryLinks = LINKS_DATA[selectedCategory] || [];
   
-  // Calculate how many more links we need (5-6 total)
-  const targetCount = 6;
-  const remainingSlots = targetCount - pinnedLinks.length;
-  
-  // Select weighted random links
-  const selectedLinks = weightedRandomSelect(categoryLinks, remainingSlots, random);
-  
-  // Combine pinned and selected
-  const allLinks = [...pinnedLinks, ...selectedLinks];
+  // Shuffle and select up to 6 links
+  const shuffled = shuffleArray(categoryLinks, random);
+  const selectedLinks = shuffled.slice(0, Math.min(6, shuffled.length));
   
   return {
     category: selectedCategory,
-    links: allLinks
+    links: selectedLinks
   };
 }
 
@@ -227,7 +156,8 @@ function render() {
   
   // Update category badge
   const categoryBadge = document.getElementById('categoryBadge');
-  categoryBadge.textContent = category.replace('_', ' ');
+  const categoryName = CATEGORIES_DATA[category]?.name || category.replace('_', ' ');
+  categoryBadge.textContent = categoryName;
   
   // Render cards
   const cardsGrid = document.getElementById('cardsGrid');
@@ -241,17 +171,13 @@ function render() {
     card.setAttribute('data-url', link.url);
     card.setAttribute('data-index', index);
     
-    if (link.pinned) {
-      card.classList.add('pinned');
-    }
-    
     if (completed.includes(link.url)) {
       card.classList.add('completed');
     }
     
     const title = document.createElement('div');
     title.className = 'card-title';
-    title.textContent = link.title;
+    title.textContent = getLinkTitle(link);
     
     card.appendChild(title);
     
@@ -317,20 +243,116 @@ function setupKeyboardNavigation() {
 }
 
 // ============================================
+// SIDEBAR
+// ============================================
+
+/**
+ * Render sidebar with all links organized by category
+ */
+function renderSidebar() {
+  const sidebarContent = document.getElementById('sidebarContent');
+  const sortedCategories = Object.keys(CATEGORIES_DATA)
+    .map(id => ({ id, ...CATEGORIES_DATA[id] }))
+    .sort((a, b) => a.order - b.order);
+  
+  sidebarContent.innerHTML = sortedCategories.map(cat => {
+    const links = LINKS_DATA[cat.id] || [];
+    if (links.length === 0) return '';
+    
+    return `
+      <div class="sidebar-category">
+        <button class="sidebar-category-header" data-category="${cat.id}">
+          <span class="category-icon">▶</span>
+          <span>${cat.name}</span>
+          <span class="category-count">${links.length}</span>
+        </button>
+        <div class="sidebar-category-links" data-category="${cat.id}">
+          ${links.map(link => `
+            <a href="${link.url}" class="sidebar-link" target="_blank">
+              <span class="link-title">${escapeHtml(getLinkTitle(link))}</span>
+            </a>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Add click handlers for collapsible headers
+  sidebarContent.querySelectorAll('.sidebar-category-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const categoryId = header.dataset.category;
+      const linksContainer = sidebarContent.querySelector(`.sidebar-category-links[data-category="${categoryId}"]`);
+      const icon = header.querySelector('.category-icon');
+      
+      if (linksContainer.style.display === 'none' || !linksContainer.style.display) {
+        linksContainer.style.display = 'block';
+        icon.textContent = '▼';
+      } else {
+        linksContainer.style.display = 'none';
+        icon.textContent = '▶';
+      }
+    });
+  });
+  
+  // Initialize all as collapsed
+  sidebarContent.querySelectorAll('.sidebar-category-links').forEach(container => {
+    container.style.display = 'none';
+  });
+}
+
+/**
+ * Setup sidebar toggle functionality
+ */
+function setupSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const toggleBtn = document.getElementById('sidebarToggle');
+  const closeBtn = document.getElementById('sidebarClose');
+  
+  const openSidebar = () => {
+    sidebar.classList.add('open');
+    overlay.classList.add('visible');
+  };
+  
+  const closeSidebar = () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
+  };
+  
+  toggleBtn.addEventListener('click', openSidebar);
+  closeBtn.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+  
+  // Escape key to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+      closeSidebar();
+    }
+  });
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
 /**
- * Load links from chrome.storage
+ * Load links and categories from chrome.storage
  */
 async function loadLinksData() {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(['stride_links'], (result) => {
+    chrome.storage.sync.get(['stride_links', 'stride_categories'], (result) => {
       if (result.stride_links) {
         LINKS_DATA = result.stride_links;
       } else {
         LINKS_DATA = DEFAULT_LINKS;
       }
+      
+      if (result.stride_categories) {
+        CATEGORIES_DATA = result.stride_categories;
+      } else {
+        CATEGORIES_DATA = DEFAULT_CATEGORIES;
+      }
+      
       resolve();
     });
   });
@@ -341,6 +363,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadLinksData();
   cleanupOldData();
   render();
+  renderSidebar();
+  setupSidebar();
   
   // Settings button
   document.getElementById('settingsBtn').addEventListener('click', () => {

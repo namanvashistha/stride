@@ -64,22 +64,16 @@ header {
 }
 
 .settings-btn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  background: none;
+  border: none;
   color: var(--text-secondary);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  transition: all 0.2s ease;
 }
 
 .settings-btn:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--accent);
   color: var(--text-primary);
   transform: rotate(45deg);
 }
@@ -140,15 +134,6 @@ main {
   font-weight: bold;
 }
 
-.card.pinned::before {
-  content: '📌';
-  position: absolute;
-  top: 0.5rem;
-  left: 0.75rem;
-  font-size: 0.9rem;
-  opacity: 0.6;
-}
-
 .card-title {
   font-size: 1rem;
   font-weight: 500;
@@ -172,6 +157,179 @@ footer {
   outline-offset: 2px;
 }
 
+/* Sidebar */
+.sidebar-toggle {
+  position: fixed;
+  top: 1.5rem;
+  left: 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+  z-index: 100;
+}
+
+.sidebar-toggle:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 100vh;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 999;
+}
+
+.sidebar-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  z-index: 10;
+}
+
+.sidebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sidebar-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sidebar-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  transition: color 0.2s;
+}
+
+.sidebar-close:hover {
+  color: var(--text-primary);
+}
+
+.sidebar-content {
+  padding: 1rem;
+}
+
+.sidebar-category {
+  margin-bottom: 1rem;
+}
+
+.sidebar-category-header {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.sidebar-category-header:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+}
+
+.category-icon {
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+  color: var(--accent);
+}
+
+.category-count {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+}
+
+.sidebar-category-links {
+  margin-top: 0.5rem;
+  padding-left: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sidebar-link {
+  padding: 0.6rem 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  display: block;
+}
+
+.sidebar-link:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  transform: translateX(4px);
+}
+
+.sidebar-link .link-title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .cards-grid {
@@ -185,5 +343,16 @@ footer {
   
   .logo {
     font-size: 1.75rem;
+  }
+  
+  .sidebar {
+    width: 280px;
+  }
+  
+  .sidebar-toggle {
+    top: 1rem;
+    left: 1rem;
+    padding: 0.6rem 0.85rem;
+    font-size: 1.1rem;
   }
 }

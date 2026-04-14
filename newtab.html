@@ -7,11 +7,27 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <button class="sidebar-toggle" id="sidebarToggle" title="View all links">☰</button>
+  
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>All Links</h2>
+      <div class="sidebar-actions">
+        <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
+        <button class="sidebar-close" id="sidebarClose">✕</button>
+      </div>
+    </div>
+    <div class="sidebar-content" id="sidebarContent">
+      <!-- Categories will be populated here -->
+    </div>
+  </div>
+  
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  
   <div class="container">
     <header>
       <h1 class="logo">Stride</h1>
       <span class="category-badge" id="categoryBadge"></span>
-      <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
     </header>
     
     <main>
@@ -23,6 +39,8 @@
     </footer>
   </div>
   
+  <script src="utils.js"></script>
+  <script src="defaults.js"></script>
   <script src="newtab.js"></script>
 </body>
 </html>

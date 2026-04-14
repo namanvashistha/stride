@@ -11,6 +11,7 @@
     <header>
       <h1>Stride Settings</h1>
       <p class="subtitle">Manage your interview prep links</p>
+      <button class="btn btn-secondary" id="backBtn" style="position: absolute; top: 1.5rem; right: 1.5rem;">← Back to New Tab</button>
     </header>
 
     <div class="actions">
@@ -23,12 +24,11 @@
 
     <div class="status-message" id="statusMessage"></div>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-category="dsa">DSA</button>
-      <button class="tab-btn" data-category="system_design">System Design</button>
-      <button class="tab-btn" data-category="backend">Backend</button>
-      <button class="tab-btn" data-category="behavioral">Behavioral</button>
+    <div class="tabs" id="tabsContainer">
+      <!-- Tabs will be rendered dynamically -->
     </div>
+    
+    <p class="hint-text">💡 Right-click a tab to rename or delete it</p>
 
     <div class="category-section" id="categorySection">
       <div class="links-list" id="linksList"></div>
@@ -36,6 +36,8 @@
     </div>
   </div>
 
+  <script src="utils.js"></script>
+  <script src="defaults.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

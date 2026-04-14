@@ -145,6 +145,26 @@ h1 {
   border-bottom-color: var(--accent);
 }
 
+.tab-btn-add {
+  color: var(--accent) !important;
+  font-size: 1.2rem !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: bold;
+}
+
+.tab-btn-add:hover {
+  background: var(--bg-secondary);
+  border-radius: 8px 8px 0 0;
+}
+
+.hint-text {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  margin-top: -1rem;
+}
+
 .category-section {
   min-height: 400px;
 }
