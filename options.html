@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stride Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Stride Settings</h1>
+      <p class="subtitle">Manage your interview prep links</p>
+    </header>
+
+    <div class="actions">
+      <button id="saveBtn" class="btn btn-primary">Save Changes</button>
+      <button id="resetBtn" class="btn btn-secondary">Reset to Defaults</button>
+      <button id="exportBtn" class="btn btn-secondary">Export</button>
+      <button id="importBtn" class="btn btn-secondary">Import</button>
+      <input type="file" id="importFile" accept=".json" style="display: none;">
+    </div>
+
+    <div class="status-message" id="statusMessage"></div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-category="dsa">DSA</button>
+      <button class="tab-btn" data-category="system_design">System Design</button>
+      <button class="tab-btn" data-category="backend">Backend</button>
+      <button class="tab-btn" data-category="behavioral">Behavioral</button>
+    </div>
+
+    <div class="category-section" id="categorySection">
+      <div class="links-list" id="linksList"></div>
+      <button class="btn btn-add" id="addLinkBtn">+ Add Link</button>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
