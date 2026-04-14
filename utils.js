@@ -32,20 +32,23 @@ function keyToDisplayName(key) {
 function generateTitleFromUrl(url) {
   try {
     const urlObj = new URL(url);
-    const hostname = urlObj.hostname.replace(/^www\./, '');
     const pathParts = urlObj.pathname.split('/').filter(p => p.length > 0);
     
-    // Extract domain name
+    // Special handling for GitHub markdown files
+    if (urlObj.hostname.includes('github.com') && pathParts.length > 0) {
+      const filename = pathParts[pathParts.length - 1];
+      return cleanGithubFilename(filename);
+    }
+    
+    // General URL handling
+    const hostname = urlObj.hostname.replace(/^www\./, '');
     const domainParts = hostname.split('.');
     const mainDomain = domainParts[0];
     
-    // Capitalize first letter
     const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
     
-    // If there's a meaningful path, use it
     if (pathParts.length > 0) {
       const lastPart = pathParts[pathParts.length - 1];
-      // Clean up path (remove file extensions, replace dashes/underscores)
       const cleanPath = lastPart
         .replace(/\.(html|php|aspx?)$/i, '')
         .replace(/[-_]/g, ' ');
@@ -55,12 +58,57 @@ function generateTitleFromUrl(url) {
       }
     }
     
-    // Fallback to just the domain
     return capitalize(mainDomain);
   } catch (e) {
-    // If URL parsing fails, return the URL itself
     return url;
   }
+}
+
+/**
+ * Clean up GitHub markdown filename to readable title
+ * Remove number prefixes, handle special cases
+ * @param {string} filename - The filename to clean (e.g., "01-subsets.md")
+ * @returns {string} - Clean title (e.g., "Subsets")
+ */
+function cleanGithubFilename(filename) {
+  // Remove file extension
+  let title = filename.replace(/\.(md|markdown)$/i, '');
+  
+  // Remove number prefix (e.g., "01-", "02-", etc.)
+  title = title.replace(/^\d+-/, '');
+  
+  // Split by dashes or underscores
+  const words = title.split(/[-_]/);
+  
+  // Special cases mapping
+  const specialCases = {
+    'ii': 'II',
+    'iii': 'III',
+    'iv': 'IV',
+    'lru': 'LRU',
+    'bst': 'BST',
+    'dfs': 'DFS',
+    'bfs': 'BFS',
+    'dp': 'DP',
+    '1d': '1D',
+    '2d': '2D',
+    'k': 'K',
+    'n': 'N',
+    'x': 'X'
+  };
+  
+  // Capitalize each word
+  const cleanedWords = words.map(word => {
+    const lower = word.toLowerCase();
+    // Check if it's a special case
+    if (specialCases[lower]) {
+      return specialCases[lower];
+    }
+    // Regular capitalization
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  });
+  
+  return cleanedWords.join(' ');
 }
 
 /**

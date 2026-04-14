@@ -59,6 +59,18 @@ function shuffleArray(array, random) {
 }
 
 /**
+ * Sort links by URL (alphabetically)
+ * This naturally orders by folder structure then filename
+ */
+function sortLinks(links) {
+  return [...links].sort((a, b) => {
+    const urlA = a.url || (a.urls && a.urls[0]) || '';
+    const urlB = b.url || (b.urls && b.urls[0]) || '';
+    return urlA.localeCompare(urlB);
+  });
+}
+
+/**
  * Select subcategory for each category based on the day
  */
 function selectSubcategoriesForDay(seed) {
@@ -84,7 +96,7 @@ function selectSubcategoriesForDay(seed) {
 }
 
 /**
- * Get daily links selection (6 links from multiple subcategories)
+ * Get daily links selection (all links from selected subcategories, grouped by category)
  */
 function getDailyLinks(dateString) {
   const seed = generateSeed(dateString);
@@ -93,27 +105,13 @@ function getDailyLinks(dateString) {
   // Select one subcategory from each category
   const selections = selectSubcategoriesForDay(seed);
   
-  // Collect all links from selected subcategories
-  let allLinks = [];
+  // Sort links within each selection by their number prefix
   selections.forEach(selection => {
-    // Shuffle links within each subcategory
-    const shuffled = shuffleArray(selection.links, random);
-    shuffled.forEach(link => {
-      allLinks.push({
-        ...link,
-        categoryId: selection.categoryId,
-        subcategoryId: selection.subcategoryId
-      });
-    });
+    selection.links = sortLinks(selection.links);
   });
   
-  // Shuffle all links together and take 6
-  allLinks = shuffleArray(allLinks, random);
-  const selectedLinks = allLinks.slice(0, Math.min(6, allLinks.length));
-  
   return {
-    selections, // Keep track of which subcategories were chosen
-    links: selectedLinks
+    selections // Return all subcategories with all their links
   };
 }
 
@@ -173,59 +171,96 @@ function cleanupOldData() {
 // ============================================
 
 /**
+ * Create a link card element
+ */
+function createLinkCard(url, title, todayDate, completed, index) {
+  const card = document.createElement('a');
+  card.href = url;
+  card.className = 'card';
+  card.tabIndex = 0;
+  card.setAttribute('data-url', url);
+  card.setAttribute('data-index', index);
+  
+  if (completed.includes(url)) {
+    card.classList.add('completed');
+  }
+  
+  const titleEl = document.createElement('div');
+  titleEl.className = 'card-title';
+  titleEl.textContent = title || generateTitleFromUrl(url);
+  
+  card.appendChild(titleEl);
+  
+  // Handle click
+  card.addEventListener('click', (e) => {
+    markLinkCompleted(url, todayDate);
+    card.classList.add('completed');
+  });
+  
+  // Handle keyboard navigation
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      markLinkCompleted(url, todayDate);
+      card.classList.add('completed');
+      window.open(url, '_blank');
+    }
+  });
+  
+  return card;
+}
+
+/**
  * Render the daily links to the page
  */
 function render() {
   const todayDate = getTodayDateString();
-  const { selections, links } = getDailyLinks(todayDate);
+  const { selections } = getDailyLinks(todayDate);
   const completed = getCompletionState(todayDate);
   
-  // Update category badge with selected subcategories
-  const categoryBadge = document.getElementById('categoryBadge');
-  const badgeText = selections
-    .map(s => `${keyToDisplayName(s.categoryId)} → ${keyToDisplayName(s.subcategoryId)}`)
-    .join(' • ');
-  categoryBadge.textContent = badgeText;
-  
-  // Render cards
+  // Render cards grouped by category
   const cardsGrid = document.getElementById('cardsGrid');
   cardsGrid.innerHTML = '';
   
-  links.forEach((link, index) => {
-    const card = document.createElement('a');
-    card.href = link.url;
-    card.className = 'card';
-    card.tabIndex = 0;
-    card.setAttribute('data-url', link.url);
-    card.setAttribute('data-index', index);
+  let cardIndex = 0;
+  selections.forEach(selection => {
+    // Create section header
+    const section = document.createElement('div');
+    section.className = 'category-section';
     
-    if (completed.includes(link.url)) {
-      card.classList.add('completed');
-    }
+    const header = document.createElement('h3');
+    header.className = 'category-section-header';
+    header.textContent = `${keyToDisplayName(selection.categoryId)} → ${keyToDisplayName(selection.subcategoryId)}`;
+    section.appendChild(header);
     
-    const title = document.createElement('div');
-    title.className = 'card-title';
-    title.textContent = getLinkTitle(link);
+    const linksContainer = document.createElement('div');
+    linksContainer.className = 'category-links';
     
-    card.appendChild(title);
-    
-    // Handle click
-    card.addEventListener('click', (e) => {
-      markLinkCompleted(link.url, todayDate);
-      card.classList.add('completed');
-    });
-    
-    // Handle keyboard navigation
-    card.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        markLinkCompleted(link.url, todayDate);
-        card.classList.add('completed');
-        window.open(link.url, '_blank');
+    // Add all links from this selection
+    selection.links.forEach(link => {
+      // Support both single URL and multiple URLs
+      const urls = link.urls || [link.url];
+      
+      // If multiple URLs, create a wrapper
+      if (urls.length > 1) {
+        const multiLinkWrapper = document.createElement('div');
+        multiLinkWrapper.className = 'multi-link-wrapper';
+        
+        urls.forEach((url) => {
+          const card = createLinkCard(url, link.title, todayDate, completed, cardIndex++);
+          multiLinkWrapper.appendChild(card);
+        });
+        
+        linksContainer.appendChild(multiLinkWrapper);
+      } else {
+        // Single URL - original behavior
+        const card = createLinkCard(urls[0], link.title, todayDate, completed, cardIndex++);
+        linksContainer.appendChild(card);
       }
     });
     
-    cardsGrid.appendChild(card);
+    section.appendChild(linksContainer);
+    cardsGrid.appendChild(section);
   });
   
   // Setup arrow key navigation
@@ -246,21 +281,15 @@ function setupKeyboardNavigation() {
     let nextIndex = currentIndex;
     
     switch(e.key) {
+      case 'ArrowDown':
       case 'ArrowRight':
         e.preventDefault();
         nextIndex = Math.min(currentIndex + 1, cards.length - 1);
         break;
+      case 'ArrowUp':
       case 'ArrowLeft':
         e.preventDefault();
         nextIndex = Math.max(currentIndex - 1, 0);
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        nextIndex = Math.min(currentIndex + 2, cards.length - 1);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        nextIndex = Math.max(currentIndex - 2, 0);
         break;
     }
     
@@ -310,11 +339,14 @@ function renderSidebar() {
                   <span class="subcategory-count">${links.length}</span>
                 </button>
                 <div class="sidebar-subcategory-links" data-category="${categoryId}" data-subcategory="${subcategoryId}">
-                  ${links.map(link => `
-                    <a href="${link.url}" class="sidebar-link" target="_blank">
-                      <span class="link-title">${escapeHtml(getLinkTitle(link))}</span>
-                    </a>
-                  `).join('')}
+                  ${links.map(link => {
+                    const urls = link.urls || [link.url];
+                    return urls.map(url => `
+                      <a href="${url}" class="sidebar-link" target="_blank">
+                        <span class="link-title">${escapeHtml(link.title || generateTitleFromUrl(url))}</span>
+                      </a>
+                    `).join('');
+                  }).join('')}
                 </div>
               </div>
             `;
