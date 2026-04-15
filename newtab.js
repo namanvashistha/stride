@@ -21,6 +21,18 @@ function getTodayDateString() {
 }
 
 /**
+ * Generate a deterministic day number from a date string
+ * Used for cycling through subcategories in order
+ */
+function getDayNumber(dateString) {
+  const startDate = new Date('2026-01-01'); // Reference start date
+  const currentDate = new Date(dateString);
+  const diffTime = currentDate - startDate;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+}
+
+/**
  * Generate a deterministic seed from a date string
  */
 function generateSeed(dateString) {
@@ -72,17 +84,19 @@ function sortLinks(links) {
 
 /**
  * Select subcategory for each category based on the day
+ * Cycles through subcategories in order (day 0: first, day 1: second, etc.)
  */
-function selectSubcategoriesForDay(seed) {
+function selectSubcategoriesForDay() {
   const categories = Object.keys(LINKS_DATA).sort(); // Sort for consistency
-  const random = createSeededRandom(seed);
+  const dateString = getTodayDateString();
+  const dayNumber = getDayNumber(dateString);
   const selections = [];
   
   categories.forEach((categoryId) => {
     const subcategoryIds = Object.keys(LINKS_DATA[categoryId] || {}).sort();
     if (subcategoryIds.length > 0) {
-      // Pick one subcategory from this category
-      const index = Math.floor(random() * subcategoryIds.length);
+      // Cycle through subcategories in order using modulo
+      const index = dayNumber % subcategoryIds.length;
       const subcategoryId = subcategoryIds[index];
       selections.push({
         categoryId,
@@ -99,11 +113,8 @@ function selectSubcategoriesForDay(seed) {
  * Get daily links selection (all links from selected subcategories, grouped by category)
  */
 function getDailyLinks(dateString) {
-  const seed = generateSeed(dateString);
-  const random = createSeededRandom(seed);
-  
-  // Select one subcategory from each category
-  const selections = selectSubcategoriesForDay(seed);
+  // Select one subcategory from each category (cycles in order by day)
+  const selections = selectSubcategoriesForDay();
   
   // Sort links within each selection by their number prefix
   selections.forEach(selection => {
