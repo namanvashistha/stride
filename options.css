@@ -339,6 +339,34 @@ h1 {
   align-items: center;
 }
 
+.link-item.multi-url {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.link-urls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.url-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.url-row .link-input {
+  flex: 1;
+}
+
+.btn-sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+}
+
 .link-input {
   flex: 1;
   background: var(--bg-primary);

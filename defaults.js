@@ -197,21 +197,21 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/18-bit-manipulation/07-reverse-integer.md', 'https://leetcode.com/problems/reverse-integer/'] }
     ]
   },
-  system_design: {
-    lld: [
-      { url: 'https://github.com/tssovi/grokking-the-object-oriented-design-interview' },
-      { url: 'https://www.designgurus.io/course/grokking-the-low-level-design-interview' },
-      { url: 'https://refactoring.guru/design-patterns' }
-    ],
-    hld: [
-      { url: 'https://github.com/donnemartin/system-design-primer' },
-      { url: 'https://bytebytego.com/' },
-      { url: 'https://www.youtube.com/@ByteByteGo' }
-    ],
-    databases: [
-      { url: 'https://www.postgresql.org/docs/' },
-      { url: 'https://redis.io/docs/' },
-      { url: 'https://www.mongodb.com/docs/' }
-    ]
-  }
+  // system_design: {
+  //   lld: [
+  //     { url: 'https://github.com/tssovi/grokking-the-object-oriented-design-interview' },
+  //     { url: 'https://www.designgurus.io/course/grokking-the-low-level-design-interview' },
+  //     { url: 'https://refactoring.guru/design-patterns' }
+  //   ],
+  //   hld: [
+  //     { url: 'https://github.com/donnemartin/system-design-primer' },
+  //     { url: 'https://bytebytego.com/' },
+  //     { url: 'https://www.youtube.com/@ByteByteGo' }
+  //   ],
+  //   databases: [
+  //     { url: 'https://www.postgresql.org/docs/' },
+  //     { url: 'https://redis.io/docs/' },
+  //     { url: 'https://www.mongodb.com/docs/' }
+  //   ]
+  // }
 };

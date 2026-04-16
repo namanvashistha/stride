@@ -260,18 +260,34 @@ function renderSubcategories() {
         </div>
         <div class="subcategory-links">
           ${links.length === 0 ? '<p class="empty-notice">No links yet</p>' : ''}
-          ${links.map((link, index) => `
-            <div class="link-item">
-              <input type="url" class="link-input" value="${escapeHtml(link.url)}" 
-                     placeholder="https://..." 
-                     onchange="updateLink('${subcategoryId}', ${index}, this.value)">
+          ${links.map((link, linkIndex) => {
+            const urls = link.urls || [link.url || ''];
+            const hasMultipleUrls = urls.length > 1 || link.urls;
+            return `
+            <div class="link-item ${hasMultipleUrls ? 'multi-url' : ''}">
+              <div class="link-urls">
+                ${urls.map((url, urlIndex) => `
+                  <div class="url-row">
+                    <input type="url" class="link-input" value="${escapeHtml(url || '')}" 
+                           placeholder="https://..." 
+                           onchange="updateLinkUrl('${subcategoryId}', ${linkIndex}, ${urlIndex}, this.value)">
+                    ${hasMultipleUrls ? `
+                      <button class="btn-icon danger" onclick="removeUrl('${subcategoryId}', ${linkIndex}, ${urlIndex})" title="Remove URL">✕</button>
+                    ` : ''}
+                  </div>
+                `).join('')}
+                ${hasMultipleUrls ? `
+                  <button class="btn btn-secondary btn-sm" onclick="addUrl('${subcategoryId}', ${linkIndex})">+ Add URL</button>
+                ` : ''}
+              </div>
               <div class="link-actions">
-                <button class="btn-icon" onclick="moveLinkUp('${subcategoryId}', ${index})" title="Move up">↑</button>
-                <button class="btn-icon" onclick="moveLinkDown('${subcategoryId}', ${index})" title="Move down">↓</button>
-                <button class="btn-icon danger" onclick="deleteLink('${subcategoryId}', ${index})" title="Delete">✕</button>
+                ${!hasMultipleUrls ? `<button class="btn-icon" onclick="convertToMultiUrl('${subcategoryId}', ${linkIndex})" title="Add another URL">+</button>` : ''}
+                <button class="btn-icon" onclick="moveLinkUp('${subcategoryId}', ${linkIndex})" title="Move up">↑</button>
+                <button class="btn-icon" onclick="moveLinkDown('${subcategoryId}', ${linkIndex})" title="Move down">↓</button>
+                <button class="btn-icon danger" onclick="deleteLink('${subcategoryId}', ${linkIndex})" title="Delete">✕</button>
               </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       </div>
     `;
@@ -317,8 +333,45 @@ function addLinkToSubcategory(subcategoryId) {
   renderSubcategories();
 }
 
-function updateLink(subcategoryId, index, value) {
-  linksData[currentCategory][subcategoryId][index].url = value;
+function updateLinkUrl(subcategoryId, linkIndex, urlIndex, value) {
+  const link = linksData[currentCategory][subcategoryId][linkIndex];
+  if (link.urls) {
+    link.urls[urlIndex] = value;
+  } else {
+    link.url = value;
+  }
+}
+
+function addUrl(subcategoryId, linkIndex) {
+  const link = linksData[currentCategory][subcategoryId][linkIndex];
+  if (!link.urls) {
+    link.urls = [link.url || ''];
+    delete link.url;
+  }
+  link.urls.push('');
+  renderSubcategories();
+}
+
+function removeUrl(subcategoryId, linkIndex, urlIndex) {
+  const link = linksData[currentCategory][subcategoryId][linkIndex];
+  if (link.urls && link.urls.length > 1) {
+    link.urls.splice(urlIndex, 1);
+    // If only one URL left, convert back to single url
+    if (link.urls.length === 1) {
+      link.url = link.urls[0];
+      delete link.urls;
+    }
+    renderSubcategories();
+  }
+}
+
+function convertToMultiUrl(subcategoryId, linkIndex) {
+  const link = linksData[currentCategory][subcategoryId][linkIndex];
+  if (!link.urls) {
+    link.urls = [link.url || '', ''];
+    delete link.url;
+    renderSubcategories();
+  }
 }
 
 function deleteLink(subcategoryId, index) {

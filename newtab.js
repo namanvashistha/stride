@@ -318,6 +318,53 @@ function setupKeyboardNavigation() {
 // ============================================
 
 /**
+ * Calculate the next date when a specific subcategory will be shown
+ */
+function getNextDateForSubcategory(categoryId, subcategoryId) {
+  const subcategoryIds = Object.keys(LINKS_DATA[categoryId] || {}).sort();
+  const subcategoryIndex = subcategoryIds.indexOf(subcategoryId);
+  
+  if (subcategoryIndex === -1) return null;
+  
+  const today = new Date();
+  const todayDateString = getTodayDateString();
+  const todayDayNumber = getDayNumber(todayDateString);
+  const currentIndex = todayDayNumber % subcategoryIds.length;
+  
+  // Calculate days until this subcategory's turn
+  let daysUntil;
+  if (subcategoryIndex >= currentIndex) {
+    daysUntil = subcategoryIndex - currentIndex;
+  } else {
+    daysUntil = subcategoryIds.length - currentIndex + subcategoryIndex;
+  }
+  
+  const nextDate = new Date(today);
+  nextDate.setDate(today.getDate() + daysUntil);
+  
+  return {
+    date: nextDate,
+    dateString: nextDate.toISOString().split('T')[0],
+    daysUntil: daysUntil,
+    isToday: daysUntil === 0
+  };
+}
+
+/**
+ * Format date for display (relative or absolute)
+ */
+function formatDateForDisplay(dateInfo) {
+  if (dateInfo.isToday) return 'Today';
+  if (dateInfo.daysUntil === 1) return 'Tomorrow';
+  // if (dateInfo.daysUntil <= 6) return `in ${dateInfo.daysUntil} days`;
+  
+  // Format as Mon DD
+  const date = dateInfo.date;
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${monthNames[date.getMonth()]} ${date.getDate()}`;
+}
+
+/**
  * Render sidebar with all links organized by category → subcategory
  */
 function renderSidebar() {
@@ -333,6 +380,16 @@ function renderSidebar() {
     // Count total links in this category
     const totalLinks = subcategoryIds.reduce((sum, subId) => sum + (subcategories[subId]?.length || 0), 0);
     
+    // Create subcategory data with dates and sort by next appearance
+    const subcategoryData = subcategoryIds
+      .filter(subId => (subcategories[subId] || []).length > 0)
+      .map(subId => ({
+        id: subId,
+        links: subcategories[subId],
+        nextDate: getNextDateForSubcategory(categoryId, subId)
+      }))
+      .sort((a, b) => a.nextDate.daysUntil - b.nextDate.daysUntil);
+    
     return `
       <div class="sidebar-category">
         <button class="sidebar-category-header" data-category="${categoryId}">
@@ -341,15 +398,15 @@ function renderSidebar() {
           <span class="category-count">${totalLinks}</span>
         </button>
         <div class="sidebar-category-content" data-category="${categoryId}">
-          ${subcategoryIds.map(subcategoryId => {
-            const links = subcategories[subcategoryId] || [];
-            if (links.length === 0) return '';
-            
+          ${subcategoryData.map(({ id: subcategoryId, links, nextDate }) => {
             return `
               <div class="sidebar-subcategory">
-                <button class="sidebar-subcategory-header" data-category="${categoryId}" data-subcategory="${subcategoryId}">
+                <button class="sidebar-subcategory-header ${nextDate.isToday ? 'today' : ''}" data-category="${categoryId}" data-subcategory="${subcategoryId}">
                   <span class="subcategory-icon">▸</span>
-                  <span>${keyToDisplayName(subcategoryId)}</span>
+                  <div class="subcategory-info">
+                    <span class="subcategory-name">${keyToDisplayName(subcategoryId)}</span>
+                    <span class="subcategory-date">${formatDateForDisplay(nextDate)}</span>
+                  </div>
                   <span class="subcategory-count">${links.length}</span>
                 </button>
                 <div class="sidebar-subcategory-links" data-category="${categoryId}" data-subcategory="${subcategoryId}">
