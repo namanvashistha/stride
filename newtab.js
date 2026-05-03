@@ -5,7 +5,7 @@
 // Edit links via the Settings page (right-click extension icon > Options)
 // ============================================
 
-// These will be loaded from chrome.storage (defaults from defaults.js)
+// These will be loaded from localStorage (defaults from defaults.js)
 let LINKS_DATA = DEFAULT_LINKS;
 
 // ============================================
@@ -507,20 +507,19 @@ function setupSidebar() {
 // ============================================
 
 /**
- * Load links from chrome.storage
+ * Load links from localStorage
  */
 async function loadLinksData() {
-  return new Promise((resolve) => {
-    chrome.storage.sync.get(['stride_links'], (result) => {
-      if (result.stride_links) {
-        LINKS_DATA = result.stride_links;
-      } else {
-        LINKS_DATA = DEFAULT_LINKS;
-      }
-      
-      resolve();
-    });
-  });
+  const stored = localStorage.getItem('stride_links');
+  if (stored) {
+    try {
+      LINKS_DATA = JSON.parse(stored);
+    } catch (e) {
+      LINKS_DATA = DEFAULT_LINKS;
+    }
+  } else {
+    LINKS_DATA = DEFAULT_LINKS;
+  }
 }
 
 // Initialize on page load

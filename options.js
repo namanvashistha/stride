@@ -12,44 +12,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderSubcategories();
 });
 
-// Load links from chrome.storage
+// Load links from localStorage
 async function loadLinks() {
-  return new Promise((resolve) => {
-    chrome.storage.sync.get(['stride_links'], (result) => {
-      if (result.stride_links) {
-        linksData = result.stride_links;
-      } else {
-        linksData = JSON.parse(JSON.stringify(DEFAULT_LINKS));
-      }
-      
-      // Set first category and subcategory as current
-      const categoryIds = Object.keys(linksData).sort();
-      if (categoryIds.length > 0 && !currentCategory) {
-        currentCategory = categoryIds[0];
-        const subcategoryIds = Object.keys(linksData[currentCategory] || {}).sort();
-        if (subcategoryIds.length > 0) {
-          currentSubcategory = subcategoryIds[0];
-        }
-      }
-      
-      resolve();
-    });
-  });
+  const stored = localStorage.getItem('stride_links');
+  if (stored) {
+    try {
+      linksData = JSON.parse(stored);
+    } catch (e) {
+      linksData = JSON.parse(JSON.stringify(DEFAULT_LINKS));
+    }
+  } else {
+    linksData = JSON.parse(JSON.stringify(DEFAULT_LINKS));
+  }
+  
+  // Set first category and subcategory as current
+  const categoryIds = Object.keys(linksData).sort();
+  if (categoryIds.length > 0 && !currentCategory) {
+    currentCategory = categoryIds[0];
+    const subcategoryIds = Object.keys(linksData[currentCategory] || {}).sort();
+    if (subcategoryIds.length > 0) {
+      currentSubcategory = subcategoryIds[0];
+    }
+  }
 }
 
-// Save links to chrome.storage
+// Save links to localStorage
 async function saveLinks() {
-  return new Promise((resolve, reject) => {
-    chrome.storage.sync.set({ 
-      stride_links: linksData
-    }, () => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve();
-      }
-    });
-  });
+  try {
+    localStorage.setItem('stride_links', JSON.stringify(linksData));
+  } catch (error) {
+    throw new Error('Failed to save: ' + error.message);
+  }
 }
 
 // Setup event listeners

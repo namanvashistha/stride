@@ -10,7 +10,7 @@
 
 const DEFAULT_LINKS = {
   dsa: {
-    arrays_hashing: [
+    '01-arrays-hashing': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/01-arrays-hashing/01-contains-duplicate.md', 'https://leetcode.com/problems/contains-duplicate/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/01-arrays-hashing/02-valid-anagram.md', 'https://leetcode.com/problems/valid-anagram/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/01-arrays-hashing/03-two-sum.md', 'https://leetcode.com/problems/two-sum/'] },
@@ -21,14 +21,14 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/01-arrays-hashing/08-encode-and-decode-strings.md', 'https://leetcode.com/problems/encode-and-decode-strings/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/01-arrays-hashing/09-longest-consecutive-sequence.md', 'https://leetcode.com/problems/longest-consecutive-sequence/'] }
     ],
-    two_pointers: [
+    '02-two-pointers': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/02-two-pointers/01-valid-palindrome.md', 'https://leetcode.com/problems/valid-palindrome/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/02-two-pointers/02-two-sum-ii.md', 'https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/02-two-pointers/03-three-sum.md', 'https://leetcode.com/problems/3sum/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/02-two-pointers/04-container-with-most-water.md', 'https://leetcode.com/problems/container-with-most-water/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/02-two-pointers/05-trapping-rain-water.md', 'https://leetcode.com/problems/trapping-rain-water/'] }
     ],
-    sliding_window: [
+    '03-sliding-window': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/03-sliding-window/01-best-time-to-buy-sell-stock.md', 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/03-sliding-window/02-longest-substring-without-repeating.md', 'https://leetcode.com/problems/longest-substring-without-repeating-characters/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/03-sliding-window/03-longest-repeating-character-replacement.md', 'https://leetcode.com/problems/longest-repeating-character-replacement/'] },
@@ -36,7 +36,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/03-sliding-window/05-minimum-window-substring.md', 'https://leetcode.com/problems/minimum-window-substring/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/03-sliding-window/06-sliding-window-maximum.md', 'https://leetcode.com/problems/sliding-window-maximum/'] }
     ],
-    stack: [
+    '04-stack': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/04-stack/01-valid-parentheses.md', 'https://leetcode.com/problems/valid-parentheses/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/04-stack/02-min-stack.md', 'https://leetcode.com/problems/min-stack/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/04-stack/03-evaluate-reverse-polish-notation.md', 'https://leetcode.com/problems/evaluate-reverse-polish-notation/'] },
@@ -45,7 +45,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/04-stack/06-car-fleet.md', 'https://leetcode.com/problems/car-fleet/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/04-stack/07-largest-rectangle-histogram.md', 'https://leetcode.com/problems/largest-rectangle-in-histogram/'] }
     ],
-    binary_search: [
+    '05-binary-search': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/05-binary-search/01-binary-search.md', 'https://leetcode.com/problems/binary-search/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/05-binary-search/02-search-2d-matrix.md', 'https://leetcode.com/problems/search-a-2d-matrix/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/05-binary-search/03-koko-eating-bananas.md', 'https://leetcode.com/problems/koko-eating-bananas/'] },
@@ -54,7 +54,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/05-binary-search/06-time-based-key-value-store.md', 'https://leetcode.com/problems/time-based-key-value-store/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/05-binary-search/07-median-of-two-sorted-arrays.md', 'https://leetcode.com/problems/median-of-two-sorted-arrays/'] }
     ],
-    linked_list: [
+    '06-linked-list': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/06-linked-list/01-reverse-linked-list.md', 'https://leetcode.com/problems/reverse-linked-list/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/06-linked-list/02-merge-two-sorted-lists.md', 'https://leetcode.com/problems/merge-two-sorted-lists/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/06-linked-list/03-reorder-list.md', 'https://leetcode.com/problems/reorder-list/'] },
@@ -67,7 +67,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/06-linked-list/10-merge-k-sorted-lists.md', 'https://leetcode.com/problems/merge-k-sorted-lists/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/06-linked-list/11-reverse-nodes-in-k-group.md', 'https://leetcode.com/problems/reverse-nodes-in-k-group/'] }
     ],
-    trees: [
+    '07-trees': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/07-trees/01-invert-binary-tree.md', 'https://leetcode.com/problems/invert-binary-tree/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/07-trees/02-maximum-depth-of-binary-tree.md', 'https://leetcode.com/problems/maximum-depth-of-binary-tree/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/07-trees/03-diameter-of-binary-tree.md', 'https://leetcode.com/problems/diameter-of-binary-tree/'] },
@@ -84,12 +84,12 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/07-trees/14-binary-tree-maximum-path-sum.md', 'https://leetcode.com/problems/binary-tree-maximum-path-sum/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/07-trees/15-serialize-deserialize-binary-tree.md', 'https://leetcode.com/problems/serialize-and-deserialize-binary-tree/'] }
     ],
-    tries: [
+    '08-tries': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/08-tries/01-implement-trie.md', 'https://leetcode.com/problems/implement-trie-prefix-tree/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/08-tries/02-design-add-search-words.md', 'https://leetcode.com/problems/design-add-and-search-words-data-structure/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/08-tries/03-word-search-ii.md', 'https://leetcode.com/problems/word-search-ii/'] }
     ],
-    heap_priority_queue: [
+    '09-heap-priority-queue': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/09-heap-priority-queue/01-kth-largest-element-stream.md', 'https://leetcode.com/problems/kth-largest-element-in-a-stream/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/09-heap-priority-queue/02-last-stone-weight.md', 'https://leetcode.com/problems/last-stone-weight/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/09-heap-priority-queue/03-k-closest-points-to-origin.md', 'https://leetcode.com/problems/k-closest-points-to-origin/'] },
@@ -98,7 +98,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/09-heap-priority-queue/06-design-twitter.md', 'https://leetcode.com/problems/design-twitter/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/09-heap-priority-queue/07-find-median-data-stream.md', 'https://leetcode.com/problems/find-median-from-data-stream/'] }
     ],
-    backtracking: [
+    '10-backtracking': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/10-backtracking/01-subsets.md', 'https://leetcode.com/problems/subsets/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/10-backtracking/02-combination-sum.md', 'https://leetcode.com/problems/combination-sum/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/10-backtracking/03-permutations.md', 'https://leetcode.com/problems/permutations/'] },
@@ -109,7 +109,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/10-backtracking/08-letter-combinations-phone-number.md', 'https://leetcode.com/problems/letter-combinations-of-a-phone-number/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/10-backtracking/09-n-queens.md', 'https://leetcode.com/problems/n-queens/'] }
     ],
-    graphs: [
+    '11-graphs': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/11-graphs/01-number-of-islands.md', 'https://leetcode.com/problems/number-of-islands/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/11-graphs/02-clone-graph.md', 'https://leetcode.com/problems/clone-graph/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/11-graphs/03-max-area-of-island.md', 'https://leetcode.com/problems/max-area-of-island/'] },
@@ -124,7 +124,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/11-graphs/12-graph-valid-tree.md', 'https://leetcode.com/problems/graph-valid-tree/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/11-graphs/13-word-ladder.md', 'https://leetcode.com/problems/word-ladder/'] }
     ],
-    advanced_graphs: [
+    '12-advanced-graphs': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/12-advanced-graphs/01-reconstruct-itinerary.md', 'https://leetcode.com/problems/reconstruct-itinerary/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/12-advanced-graphs/02-min-cost-connect-all-points.md', 'https://leetcode.com/problems/min-cost-to-connect-all-points/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/12-advanced-graphs/03-network-delay-time.md', 'https://leetcode.com/problems/network-delay-time/'] },
@@ -132,7 +132,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/12-advanced-graphs/05-alien-dictionary.md', 'https://leetcode.com/problems/alien-dictionary/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/12-advanced-graphs/06-cheapest-flights-k-stops.md', 'https://leetcode.com/problems/cheapest-flights-within-k-stops/'] }
     ],
-    dp_1d: [
+    '13-dynamic-programming-1d': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/13-dynamic-programming-1d/01-climbing-stairs.md', 'https://leetcode.com/problems/climbing-stairs/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/13-dynamic-programming-1d/02-min-cost-climbing-stairs.md', 'https://leetcode.com/problems/min-cost-climbing-stairs/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/13-dynamic-programming-1d/03-house-robber.md', 'https://leetcode.com/problems/house-robber/'] },
@@ -146,7 +146,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/13-dynamic-programming-1d/11-word-break.md', 'https://leetcode.com/problems/word-break/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/13-dynamic-programming-1d/12-partition-equal-subset-sum.md', 'https://leetcode.com/problems/partition-equal-subset-sum/'] }
     ],
-    dp_2d: [
+    '14-dynamic-programming-2d': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/14-dynamic-programming-2d/01-unique-paths.md', 'https://leetcode.com/problems/unique-paths/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/14-dynamic-programming-2d/02-longest-common-subsequence.md', 'https://leetcode.com/problems/longest-common-subsequence/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/14-dynamic-programming-2d/03-best-time-stock-with-cooldown.md', 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/'] },
@@ -159,7 +159,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/14-dynamic-programming-2d/10-edit-distance.md', 'https://leetcode.com/problems/edit-distance/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/14-dynamic-programming-2d/11-regular-expression-matching.md', 'https://leetcode.com/problems/regular-expression-matching/'] }
     ],
-    greedy: [
+    '15-greedy': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/15-greedy/01-maximum-subarray.md', 'https://leetcode.com/problems/maximum-subarray/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/15-greedy/02-jump-game.md', 'https://leetcode.com/problems/jump-game/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/15-greedy/03-jump-game-ii.md', 'https://leetcode.com/problems/jump-game-ii/'] },
@@ -169,7 +169,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/15-greedy/07-partition-labels.md', 'https://leetcode.com/problems/partition-labels/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/15-greedy/08-valid-parenthesis-string.md', 'https://leetcode.com/problems/valid-parenthesis-string/'] }
     ],
-    intervals: [
+    '16-intervals': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/16-intervals/01-insert-interval.md', 'https://leetcode.com/problems/insert-interval/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/16-intervals/02-merge-intervals.md', 'https://leetcode.com/problems/merge-intervals/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/16-intervals/03-non-overlapping-intervals.md', 'https://leetcode.com/problems/non-overlapping-intervals/'] },
@@ -177,7 +177,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/16-intervals/05-meeting-rooms-ii.md', 'https://leetcode.com/problems/meeting-rooms-ii/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/16-intervals/06-minimum-interval-to-include-query.md', 'https://leetcode.com/problems/minimum-interval-to-include-each-query/'] }
     ],
-    math_geometry: [
+    '17-math-geometry': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/17-math-geometry/01-rotate-image.md', 'https://leetcode.com/problems/rotate-image/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/17-math-geometry/02-spiral-matrix.md', 'https://leetcode.com/problems/spiral-matrix/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/17-math-geometry/03-set-matrix-zeroes.md', 'https://leetcode.com/problems/set-matrix-zeroes/'] },
@@ -187,7 +187,7 @@ const DEFAULT_LINKS = {
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/17-math-geometry/07-multiply-strings.md', 'https://leetcode.com/problems/multiply-strings/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/17-math-geometry/08-detect-squares.md', 'https://leetcode.com/problems/detect-squares/'] }
     ],
-    bit_manipulation: [
+    '18-bit-manipulation': [
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/18-bit-manipulation/01-single-number.md', 'https://leetcode.com/problems/single-number/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/18-bit-manipulation/02-number-of-1-bits.md', 'https://leetcode.com/problems/number-of-1-bits/'] },
       { urls: ['https://github.com/namanvashistha/dsa/blob/main/18-bit-manipulation/03-counting-bits.md', 'https://leetcode.com/problems/counting-bits/'] },

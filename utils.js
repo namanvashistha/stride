@@ -6,21 +6,30 @@
 
 /**
  * Convert a key to a display name
- * @param {string} key - The key to convert (e.g., "system_design", "lld", "dsa")
+ * @param {string} key - The key to convert (e.g., "system_design", "lld", "dsa", "01-arrays-hashing")
  * @returns {string} - A human-readable display name
  */
 function keyToDisplayName(key) {
-  // Common abbreviations to uppercase
-  const abbreviations = ['dsa', 'lld', 'hld', 'api', 'apis', 'sql', 'ui', 'ux', 'dp', 'bfs', 'dfs'];
+  // Remove numeric prefix if present (e.g., "01-" from "01-arrays-hashing")
+  let cleanKey = key.replace(/^\d+-/, '');
   
-  if (abbreviations.includes(key.toLowerCase())) {
-    return key.toUpperCase();
+  // Common abbreviations to uppercase
+  const abbreviations = ['dsa', 'lld', 'hld', 'api', 'apis', 'sql', 'ui', 'ux', 'dp', 'bfs', 'dfs', '1d', '2d'];
+  
+  if (abbreviations.includes(cleanKey.toLowerCase())) {
+    return cleanKey.toUpperCase();
   }
   
-  // Split by underscores and capitalize each word
-  return key
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  // Split by underscores or dashes and capitalize each word
+  return cleanKey
+    .split(/[_-]/)
+    .map(word => {
+      // Handle special cases for abbreviations within words
+      if (abbreviations.includes(word.toLowerCase())) {
+        return word.toUpperCase();
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
     .join(' ');
 }
 

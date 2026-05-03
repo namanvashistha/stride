@@ -18,9 +18,8 @@ The extension stores the following data locally on your device using Chrome's st
 
 2. **Custom Configurations** (Optional): If you modify the default problem set through the options page, your custom links are stored locally
 
-All data is stored using `chrome.storage.sync`, which means:
-- Data remains on your device
-- Data syncs across your Chrome browsers if you're signed into Chrome
+All data is stored using `localStorage`, which means:
+- Data remains on your device only (not synced across browsers)
 - Data is never transmitted to our servers (we don't have any servers)
 - You can clear this data at any time through Chrome's extension settings
 

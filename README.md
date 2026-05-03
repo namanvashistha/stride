@@ -123,8 +123,7 @@ stride/
 The extension uses:
 - **Seeded Random**: Deterministic daily selections using date-based seeds
 - **Fisher-Yates Shuffle**: Fair randomization for link selection
-- **Chrome Storage**: Links configuration synced across devices
-- **LocalStorage**: Completion state persists per day
+- **LocalStorage**: Links configuration and completion state stored locally
 - **Auto-cleanup**: Removes completion data older than 7 days
 
 ## Usage
