@@ -358,10 +358,11 @@ function formatDateForDisplay(dateInfo) {
   if (dateInfo.daysUntil === 1) return 'Tomorrow';
   // if (dateInfo.daysUntil <= 6) return `in ${dateInfo.daysUntil} days`;
   
-  // Format as Mon DD
+  // Format as "Thu, May 14"
   const date = dateInfo.date;
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${monthNames[date.getMonth()]} ${date.getDate()}`;
+  return `${monthNames[date.getMonth()]} ${date.getDate()} - ${dayNames[date.getDay()]}`;
 }
 
 /**
@@ -412,11 +413,25 @@ function renderSidebar() {
                 <div class="sidebar-subcategory-links" data-category="${categoryId}" data-subcategory="${subcategoryId}">
                   ${links.map(link => {
                     const urls = link.urls || [link.url];
-                    return urls.map(url => `
-                      <a href="${url}" class="sidebar-link" target="_blank">
-                        <span class="link-title">${escapeHtml(link.title || generateTitleFromUrl(url))}</span>
+                    const primaryUrl = urls[0];
+                    const secondaryUrls = urls.slice(1);
+                    const title = link.title || generateTitleFromUrl(primaryUrl);
+                    const primary = `
+                      <a href="${primaryUrl}" class="sidebar-link" target="_blank">
+                        <span class="link-title">${escapeHtml(title)}</span>
                       </a>
-                    `).join('');
+                    `;
+                    if (secondaryUrls.length === 0) return primary;
+                    const icons = secondaryUrls.map(url => {
+                      const host = (() => { try { return new URL(url).hostname; } catch (e) { return ''; } })();
+                      const favicon = getFaviconUrl(url);
+                      return `
+                        <a href="${url}" class="sidebar-link-icon" target="_blank" title="${escapeHtml(host)}" aria-label="${escapeHtml(host)}">
+                          <img src="${favicon}" alt="" width="16" height="16" onerror="this.style.display='none'" />
+                        </a>
+                      `;
+                    }).join('');
+                    return `<div class="sidebar-link-row">${primary}${icons}</div>`;
                   }).join('')}
                 </div>
               </div>
@@ -433,14 +448,16 @@ function renderSidebar() {
       const categoryId = header.dataset.category;
       const contentContainer = sidebarContent.querySelector(`.sidebar-category-content[data-category="${categoryId}"]`);
       const icon = header.querySelector('.category-icon');
-      
-      if (contentContainer.style.display === 'none' || !contentContainer.style.display) {
+
+      const shouldExpand = contentContainer.style.display === 'none' || !contentContainer.style.display;
+      if (shouldExpand) {
         contentContainer.style.display = 'block';
         icon.textContent = '▼';
       } else {
         contentContainer.style.display = 'none';
         icon.textContent = '▶';
       }
+      setCategoryExpanded(categoryId, shouldExpand);
     });
   });
   
@@ -462,13 +479,39 @@ function renderSidebar() {
     });
   });
   
-  // Initialize all as collapsed
+  // Restore expansion state for main categories from localStorage; subcategories always start collapsed
+  const expanded = getExpandedCategories();
   sidebarContent.querySelectorAll('.sidebar-category-content').forEach(container => {
-    container.style.display = 'none';
+    const isExpanded = expanded.has(container.dataset.category);
+    container.style.display = isExpanded ? 'block' : 'none';
+    const header = sidebarContent.querySelector(`.sidebar-category-header[data-category="${container.dataset.category}"] .category-icon`);
+    if (header) header.textContent = isExpanded ? '▼' : '▶';
   });
   sidebarContent.querySelectorAll('.sidebar-subcategory-links').forEach(container => {
     container.style.display = 'none';
   });
+}
+
+/**
+ * Get the set of expanded main-category ids from localStorage
+ */
+function getExpandedCategories() {
+  try {
+    const raw = localStorage.getItem('stride_sidebar_expanded_categories');
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch (e) {
+    return new Set();
+  }
+}
+
+/**
+ * Persist expansion state for a main category
+ */
+function setCategoryExpanded(categoryId, expanded) {
+  const set = getExpandedCategories();
+  if (expanded) set.add(categoryId);
+  else set.delete(categoryId);
+  localStorage.setItem('stride_sidebar_expanded_categories', JSON.stringify([...set]));
 }
 
 /**

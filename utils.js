@@ -130,6 +130,30 @@ function getLinkTitle(link) {
 }
 
 /**
+ * Get a favicon URL for a page. Uses Chrome's MV3 _favicon API when available
+ * (requires "favicon" permission in manifest), falls back to Google's s2 service.
+ * @param {string} pageUrl
+ * @param {number} size
+ * @returns {string}
+ */
+function getFaviconUrl(pageUrl, size = 32) {
+  try {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+      const url = new URL(chrome.runtime.getURL('/_favicon/'));
+      url.searchParams.set('pageUrl', pageUrl);
+      url.searchParams.set('size', String(size));
+      return url.toString();
+    }
+  } catch (e) { /* fall through */ }
+  try {
+    const host = new URL(pageUrl).hostname;
+    return `https://www.google.com/s2/favicons?sz=${size}&domain=${encodeURIComponent(host)}`;
+  } catch (e) {
+    return '';
+  }
+}
+
+/**
  * Escape HTML to prevent XSS
  * @param {string} text - Text to escape
  * @returns {string} - Escaped HTML
